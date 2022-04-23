@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"os"
@@ -11,20 +12,20 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func input(ctx context.Context) chan byte {
-	c := make(chan byte)
+func input(ctx context.Context) chan rune {
+	c := make(chan rune)
 	go func() {
 		<-ctx.Done()
 		close(c)
 	}()
 	go func() {
-		keyBuf := make([]byte, 1)
+		rd := bufio.NewReader(os.Stdin)
 		for {
-			_, err := os.Stdin.Read(keyBuf)
+			r, _, err := rd.ReadRune()
 			if err != nil {
 				panic(err)
 			}
-			c <- keyBuf[0]
+			c <- r
 		}
 	}()
 	return c
