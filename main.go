@@ -32,22 +32,30 @@ func input(ctx context.Context) chan rune {
 	return c
 }
 
+func SetRawMode() unix.Termios {
+	var orig unix.Termios
+	if err := termios.Tcgetattr(0, &orig); err != nil {
+		panic(err)
+	}
+	t := orig
+	t.Iflag &^= syscall.BRKINT | syscall.ICRNL | syscall.INPCK | syscall.ISTRIP | syscall.IXON
+	t.Oflag &^= syscall.OPOST
+	t.Cflag |= syscall.CS8
+	t.Lflag &^= syscall.ECHO | syscall.ICANON | syscall.IEXTEN | syscall.ISIG
+	termios.Tcsetattr(0, unix.TCIFLUSH, &t)
+	return orig
+}
+
+func ResetRawMode(orig unix.Termios) {
+	termios.Tcsetattr(0, unix.TCIFLUSH, &orig)
+}
+
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
-	var t unix.Termios
-	if err := termios.Tcgetattr(0, &t); err != nil {
-		panic(err)
-	}
-	defer func(orig unix.Termios) {
-		termios.Tcsetattr(0, unix.TCSAFLUSH, &orig)
-	}(t)
-	t.Lflag &^= unix.ECHO
-	t.Lflag &^= unix.ICANON
-	if err := termios.Tcsetattr(0, unix.TCSAFLUSH, &t); err != nil {
-		panic(err)
-	}
+	orig := SetRawMode()
+	defer ResetRawMode(orig)
 	for c := range input(ctx) {
 		switch {
 		case unicode.IsControl(c):
