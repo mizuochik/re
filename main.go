@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"unicode"
 
 	"github.com/pkg/term/termios"
 	"golang.org/x/sys/unix"
@@ -48,8 +49,10 @@ func main() {
 		panic(err)
 	}
 	for c := range input(ctx) {
-		switch c {
-		case 'q':
+		switch {
+		case unicode.IsControl(c):
+			continue
+		case c == 'q':
 			cancel()
 		default:
 			fmt.Printf("%d (%c) ", c, c)
