@@ -54,8 +54,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
-	orig := SetRawMode()
-	defer ResetRawMode(orig)
+	defer ResetRawMode(SetRawMode())
 	for c := range input(ctx) {
 		switch {
 		case unicode.IsControl(c):
