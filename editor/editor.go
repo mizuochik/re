@@ -72,3 +72,11 @@ func (e *Editor) ReadKey(ctx context.Context) chan rune {
 	}()
 	return c
 }
+
+func (e *Editor) WindowSize() (int, int, error) {
+	w, err := unix.IoctlGetWinsize(1, unix.TIOCGWINSZ)
+	if err != nil {
+		return 0, 0, err
+	}
+	return int(w.Row), int(w.Col), nil
+}
