@@ -46,7 +46,10 @@ func (e *Editor) DrawRows() error {
 		return err
 	}
 	for i := 0; i < col; i++ {
-		fmt.Print("~\r\n")
+		fmt.Print("~")
+		if i < col-1 {
+			fmt.Print("\r\n")
+		}
 	}
 	return nil
 }
