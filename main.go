@@ -13,7 +13,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func input(ctx context.Context) chan rune {
+func ReadKey(ctx context.Context) chan rune {
 	c := make(chan rune)
 	go func() {
 		<-ctx.Done()
@@ -55,19 +55,24 @@ func ResetRawMode(orig unix.Termios) {
 	termios.Tcsetattr(0, unix.TCIFLUSH, &orig)
 }
 
+func HandleKey(k rune) error {
+	fmt.Printf("%d (%c) ", k, k)
+	return nil
+}
+
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 	defer ResetRawMode(SetRawMode())
-	for c := range input(ctx) {
+	for k := range ReadKey(ctx) {
 		switch {
-		case unicode.IsControl(c):
+		case unicode.IsControl(k):
 			continue
-		case c == 'q':
+		case k == 'q':
 			cancel()
 		default:
-			fmt.Printf("%d (%c) ", c, c)
+			HandleKey(k)
 		}
 	}
 }
