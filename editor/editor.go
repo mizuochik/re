@@ -15,12 +15,18 @@ type Editor struct {
 	OriginalTermios *unix.Termios
 }
 
-func (e *Editor) SetRawMode() {
+func New() *Editor {
 	var orig unix.Termios
 	if err := termios.Tcgetattr(0, &orig); err != nil {
 		panic(err)
 	}
-	t := orig
+	return &Editor{
+		OriginalTermios: &orig,
+	}
+}
+
+func (e *Editor) SetRawMode() {
+	t := *e.OriginalTermios
 	t.Iflag &^= syscall.BRKINT | syscall.ICRNL | syscall.INPCK | syscall.ISTRIP | syscall.IXON
 	t.Oflag &^= syscall.OPOST
 	t.Cflag |= syscall.CS8
@@ -28,7 +34,6 @@ func (e *Editor) SetRawMode() {
 	t.Cc[unix.VMIN] = 0
 	t.Cc[unix.VTIME] = 1
 	termios.Tcsetattr(0, unix.TCIFLUSH, &t)
-	e.OriginalTermios = &orig
 }
 
 func (e *Editor) ResetRawMode() {
@@ -38,9 +43,7 @@ func (e *Editor) ResetRawMode() {
 func (e *Editor) RefreshScreen() {
 	e.HideCursor()
 	defer e.ShowCursor()
-
 	fmt.Print("\x1b[2J")
-	fmt.Print("\x1b[H")
 }
 
 func (e *Editor) DrawRows() error {
@@ -57,6 +60,7 @@ func (e *Editor) DrawRows() error {
 			fmt.Print("\r\n")
 		}
 	}
+	fmt.Print("\x1b[H")
 	return nil
 }
 

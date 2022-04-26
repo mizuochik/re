@@ -14,8 +14,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	e := &editor.Editor{}
-
+	e := editor.New()
 	e.SetRawMode()
 	defer e.ResetRawMode()
 
