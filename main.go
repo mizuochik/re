@@ -60,11 +60,17 @@ func HandleKey(k rune) error {
 	return nil
 }
 
+func RefreshScreen() {
+	fmt.Print("\x1b[2J")
+	fmt.Print("\x1b[H")
+}
+
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 	defer ResetRawMode(SetRawMode())
+	RefreshScreen()
 	for k := range ReadKey(ctx) {
 		switch {
 		case unicode.IsControl(k):
