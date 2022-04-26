@@ -36,11 +36,17 @@ func (e *Editor) ResetRawMode() {
 }
 
 func (e *Editor) RefreshScreen() {
+	e.HideCursor()
+	defer e.ShowCursor()
+
 	fmt.Print("\x1b[2J")
 	fmt.Print("\x1b[H")
 }
 
 func (e *Editor) DrawRows() error {
+	e.HideCursor()
+	defer e.ShowCursor()
+
 	_, col, err := e.WindowSize()
 	if err != nil {
 		return err
@@ -57,6 +63,14 @@ func (e *Editor) DrawRows() error {
 func (e *Editor) HandleKey(k rune) error {
 	fmt.Printf("%d (%c) ", k, k)
 	return nil
+}
+
+func (e *Editor) HideCursor() {
+	fmt.Print("\x1b[?25l")
+}
+
+func (e *Editor) ShowCursor() {
+	fmt.Print("\x1b[?25h")
 }
 
 func (e *Editor) ReadKey(ctx context.Context) chan rune {
