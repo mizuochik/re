@@ -40,10 +40,15 @@ func (e *Editor) RefreshScreen() {
 	fmt.Print("\x1b[H")
 }
 
-func (e *Editor) DrawRaws() {
-	for i := 0; i < 24; i++ {
+func (e *Editor) DrawRows() error {
+	_, col, err := e.WindowSize()
+	if err != nil {
+		return err
+	}
+	for i := 0; i < col; i++ {
 		fmt.Print("~\r\n")
 	}
+	return nil
 }
 
 func (e *Editor) HandleKey(k rune) error {

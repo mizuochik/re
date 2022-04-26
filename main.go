@@ -20,7 +20,9 @@ func main() {
 	defer e.ResetRawMode()
 
 	e.RefreshScreen()
-	e.DrawRaws()
+	if err := e.DrawRows(); err != nil {
+		panic(err)
+	}
 
 	for k := range e.ReadKey(ctx) {
 		switch {
