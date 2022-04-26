@@ -76,6 +76,7 @@ func main() {
 		case unicode.IsControl(k):
 			continue
 		case k == 'q':
+			RefreshScreen()
 			cancel()
 		default:
 			HandleKey(k)
