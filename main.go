@@ -24,6 +24,9 @@ func input(ctx context.Context) chan rune {
 		for {
 			r, _, err := rd.ReadRune()
 			if err != nil {
+				if err.Error() == "EOF" {
+					continue // timeout
+				}
 				panic(err)
 			}
 			c <- r
@@ -42,6 +45,8 @@ func SetRawMode() unix.Termios {
 	t.Oflag &^= syscall.OPOST
 	t.Cflag |= syscall.CS8
 	t.Lflag &^= syscall.ECHO | syscall.ICANON | syscall.IEXTEN | syscall.ISIG
+	t.Cc[unix.VMIN] = 0
+	t.Cc[unix.VTIME] = 1
 	termios.Tcsetattr(0, unix.TCIFLUSH, &t)
 	return orig
 }
