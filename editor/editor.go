@@ -13,6 +13,8 @@ import (
 
 type Editor struct {
 	OriginalTermios *unix.Termios
+	Cx              int
+	Cy              int
 }
 
 func New() *Editor {
@@ -43,7 +45,12 @@ func (e *Editor) ResetRawMode() {
 func (e *Editor) RefreshScreen() {
 	e.HideCursor()
 	defer e.ShowCursor()
+	e.MoveCursor()
 	fmt.Print("\x1b[2J")
+}
+
+func (e *Editor) MoveCursor() {
+	fmt.Printf("\x1b[%d;%dH", e.Cx+1, e.Cy+1)
 }
 
 func (e *Editor) DrawRows() error {
@@ -60,7 +67,7 @@ func (e *Editor) DrawRows() error {
 			fmt.Print("\r\n")
 		}
 	}
-	fmt.Print("\x1b[H")
+	e.MoveCursor()
 	return nil
 }
 
