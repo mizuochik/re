@@ -23,8 +23,25 @@ func main() {
 		panic(err)
 	}
 
-	for k := range e.ReadKey(ctx) {
+	keys := e.ReadKey(ctx)
+	for k := range keys {
 		switch {
+		case k == '\x1b':
+			a := <-keys
+			b := <-keys
+			if a == '[' {
+				switch b {
+				case 'A':
+					e.Cy--
+				case 'B':
+					e.Cy++
+				case 'C':
+					e.Cx++
+				case 'D':
+					e.Cx--
+				}
+				e.MoveCursor()
+			}
 		case unicode.IsControl(k):
 			continue
 		case k == 'q':

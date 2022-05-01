@@ -50,7 +50,7 @@ func (e *Editor) RefreshScreen() {
 }
 
 func (e *Editor) MoveCursor() {
-	fmt.Printf("\x1b[%d;%dH", e.Cx+1, e.Cy+1)
+	fmt.Printf("\x1b[%d;%dH", e.Cy+1, e.Cx+1)
 }
 
 func (e *Editor) DrawRows() error {
