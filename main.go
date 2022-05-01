@@ -4,7 +4,6 @@ import (
 	"context"
 	"os/signal"
 	"syscall"
-	"unicode"
 
 	"github.com/mizuochikeita/re/editor"
 )
@@ -26,25 +25,7 @@ func main() {
 	keys := e.ReadKey(ctx)
 	for k := range keys {
 		switch {
-		case k == '\x1b':
-			a := <-keys
-			b := <-keys
-			if a == '[' {
-				switch b {
-				case 'A':
-					e.Cy--
-				case 'B':
-					e.Cy++
-				case 'C':
-					e.Cx++
-				case 'D':
-					e.Cx--
-				}
-				e.MoveCursor()
-			}
-		case unicode.IsControl(k):
-			continue
-		case k == 'q':
+		case !k.IsEscaped() && k.Value == 'q':
 			e.RefreshScreen()
 			cancel()
 		default:

@@ -71,8 +71,25 @@ func (e *Editor) DrawRows() error {
 	return nil
 }
 
-func (e *Editor) HandleKey(k rune) error {
-	fmt.Printf("%d (%c) ", k, k)
+func (e *Editor) HandleKey(k Key) error {
+	switch {
+	case k.IsControl():
+		return nil
+	case k.IsEscaped():
+		switch k.EscapedSequence[0] {
+		case 'A':
+			e.Cy--
+		case 'B':
+			e.Cy++
+		case 'C':
+			e.Cx++
+		case 'D':
+			e.Cx--
+		}
+		e.MoveCursor()
+	default:
+		fmt.Printf("%d (%c) ", k.Value, k.Value)
+	}
 	return nil
 }
 
@@ -84,7 +101,7 @@ func (e *Editor) ShowCursor() {
 	fmt.Print("\x1b[?25h")
 }
 
-func (e *Editor) ReadKey(ctx context.Context) chan rune {
+func (e *Editor) ReadRune(ctx context.Context) chan rune {
 	c := make(chan rune)
 	go func() {
 		<-ctx.Done()
@@ -104,6 +121,34 @@ func (e *Editor) ReadKey(ctx context.Context) chan rune {
 		}
 	}()
 	return c
+}
+
+func (e *Editor) ReadKey(ctx context.Context) chan Key {
+	ks := make(chan Key)
+	go func() {
+		defer close(ks)
+		rs := e.ReadRune(ctx)
+		for r := range rs {
+			switch {
+			case r == '\x1b':
+				a := <-rs
+				b := <-rs
+				if a == '[' {
+					switch b {
+					case 'A', 'B', 'C', 'D':
+						ks <- Key{
+							EscapedSequence: []rune{b},
+						}
+					}
+				}
+			default:
+				ks <- Key{
+					Value: r,
+				}
+			}
+		}
+	}()
+	return ks
 }
 
 func (e *Editor) WindowSize() (int, int, error) {
