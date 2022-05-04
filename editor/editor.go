@@ -3,7 +3,9 @@ package editor
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"syscall"
 
@@ -12,7 +14,7 @@ import (
 )
 
 type Editor struct {
-	OriginalTermios *unix.Termios
+	OriginalTermios unix.Termios
 	Cx              int
 	Cy              int
 	Cols            int
@@ -21,20 +23,14 @@ type Editor struct {
 }
 
 func New() *Editor {
-	var orig unix.Termios
-	if err := termios.Tcgetattr(0, &orig); err != nil {
-		panic(err)
-	}
-	return &Editor{
-		Buffer: []string{
-			"hello world",
-		},
-		OriginalTermios: &orig,
-	}
+	return &Editor{}
 }
 
-func (e *Editor) SetRawMode() {
-	t := *e.OriginalTermios
+func (e *Editor) SetRawMode() error {
+	if err := termios.Tcgetattr(0, &e.OriginalTermios); err != nil {
+		return err
+	}
+	t := e.OriginalTermios
 	t.Iflag &^= syscall.BRKINT | syscall.ICRNL | syscall.INPCK | syscall.ISTRIP | syscall.IXON
 	t.Oflag &^= syscall.OPOST
 	t.Cflag |= syscall.CS8
@@ -42,10 +38,11 @@ func (e *Editor) SetRawMode() {
 	t.Cc[unix.VMIN] = 0
 	t.Cc[unix.VTIME] = 1
 	termios.Tcsetattr(0, unix.TCIFLUSH, &t)
+	return nil
 }
 
 func (e *Editor) ResetRawMode() {
-	termios.Tcsetattr(0, unix.TCIFLUSH, e.OriginalTermios)
+	termios.Tcsetattr(0, unix.TCIFLUSH, &e.OriginalTermios)
 }
 
 func (e *Editor) RefreshScreen() {
@@ -76,6 +73,36 @@ func (e *Editor) DrawRows() error {
 		}
 	}
 	e.MoveCursor()
+	return nil
+}
+
+func (e *Editor) OpenFile(path string) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	r := bufio.NewReader(f)
+	var buf []string
+	var line []byte
+outer:
+	for {
+		line = line[:0]
+		for {
+			bs, isPrefix, err := r.ReadLine()
+			if errors.Is(err, io.EOF) {
+				break outer
+			}
+			if err != nil {
+				panic(err)
+			}
+			line = append(line, bs...)
+			if !isPrefix {
+				break
+			}
+		}
+		buf = append(buf, string(line))
+	}
+	e.Buffer = buf
 	return nil
 }
 

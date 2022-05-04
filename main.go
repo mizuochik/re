@@ -14,7 +14,9 @@ func main() {
 	defer stop()
 
 	e := editor.New()
-	e.SetRawMode()
+	if err := e.SetRawMode(); err != nil {
+		panic(err)
+	}
 	defer e.ResetRawMode()
 
 	e.RefreshScreen()
