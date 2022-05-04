@@ -20,6 +20,7 @@ type Editor struct {
 	Cols            int
 	Rows            int
 	Buffer          []string
+	Vscroll         int
 }
 
 func New() *Editor {
@@ -63,8 +64,8 @@ func (e *Editor) DrawRows() error {
 		return err
 	}
 	for i := 0; i < e.Rows; i++ {
-		if i < len(e.Buffer) {
-			fmt.Print(e.Buffer[i])
+		if i+e.Vscroll < len(e.Buffer) {
+			fmt.Print(e.Buffer[i+e.Vscroll])
 		} else {
 			fmt.Print("~")
 		}
