@@ -17,6 +17,7 @@ type Editor struct {
 	Cy              int
 	Cols            int
 	Rows            int
+	Buffer          []string
 }
 
 func New() *Editor {
@@ -25,6 +26,9 @@ func New() *Editor {
 		panic(err)
 	}
 	return &Editor{
+		Buffer: []string{
+			"hello world",
+		},
 		OriginalTermios: &orig,
 	}
 }
@@ -47,7 +51,6 @@ func (e *Editor) ResetRawMode() {
 func (e *Editor) RefreshScreen() {
 	e.HideCursor()
 	defer e.ShowCursor()
-	e.MoveCursor()
 	fmt.Print("\x1b[2J")
 }
 
@@ -58,12 +61,17 @@ func (e *Editor) MoveCursor() {
 func (e *Editor) DrawRows() error {
 	e.HideCursor()
 	defer e.ShowCursor()
+	fmt.Print("\x1b[1;1H")
 	if err := e.UpdateWindowSize(); err != nil {
 		return err
 	}
-	for i := 0; i < e.Cols; i++ {
-		fmt.Print("~")
-		if i < e.Cols-1 {
+	for i := 0; i < e.Rows; i++ {
+		if i < len(e.Buffer) {
+			fmt.Print(e.Buffer[i])
+		} else {
+			fmt.Print("~")
+		}
+		if i < e.Rows-1 {
 			fmt.Print("\r\n")
 		}
 	}
@@ -207,7 +215,5 @@ func (e *Editor) UpdateWindowSize() error {
 	}
 	e.Cols = int(w.Col)
 	e.Rows = int(w.Row)
-
-	fmt.Println(e.Cols, e.Rows)
 	return nil
 }
