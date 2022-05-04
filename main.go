@@ -19,6 +19,10 @@ func main() {
 	}
 	defer e.ResetRawMode()
 
+	if err := e.OpenFile("README.md"); err != nil {
+		panic(err)
+	}
+
 	e.RefreshScreen()
 	if err := e.DrawRows(); err != nil {
 		panic(err)
