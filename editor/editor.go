@@ -15,6 +15,8 @@ type Editor struct {
 	OriginalTermios *unix.Termios
 	Cx              int
 	Cy              int
+	Cols            int
+	Rows            int
 }
 
 func New() *Editor {
@@ -56,14 +58,12 @@ func (e *Editor) MoveCursor() {
 func (e *Editor) DrawRows() error {
 	e.HideCursor()
 	defer e.ShowCursor()
-
-	_, col, err := e.WindowSize()
-	if err != nil {
+	if err := e.UpdateWindowSize(); err != nil {
 		return err
 	}
-	for i := 0; i < col; i++ {
+	for i := 0; i < e.Cols; i++ {
 		fmt.Print("~")
-		if i < col-1 {
+		if i < e.Cols-1 {
 			fmt.Print("\r\n")
 		}
 	}
@@ -78,19 +78,51 @@ func (e *Editor) HandleKey(k Key) error {
 	case k.IsEscaped():
 		switch k.EscapedSequence[0] {
 		case 'A':
-			e.Cy--
+			e.MoveAbove()
 		case 'B':
-			e.Cy++
+			e.MoveBelow()
 		case 'C':
-			e.Cx++
+			e.MoveRight()
 		case 'D':
-			e.Cx--
+			e.MoveLeft()
 		}
 		e.MoveCursor()
 	default:
 		fmt.Printf("%d (%c) ", k.Value, k.Value)
 	}
 	return nil
+}
+
+func (e *Editor) MoveAbove() {
+	if e.Cy <= 0 {
+		return
+	}
+	e.Cy--
+	e.MoveCursor()
+}
+
+func (e *Editor) MoveBelow() {
+	if e.Cy >= e.Rows-1 {
+		return
+	}
+	e.Cy++
+	e.MoveCursor()
+}
+
+func (e *Editor) MoveRight() {
+	if e.Cx >= e.Cols-1 {
+		return
+	}
+	e.Cx++
+	e.MoveCursor()
+}
+
+func (e *Editor) MoveLeft() {
+	if e.Cx <= 0 {
+		return
+	}
+	e.Cx--
+	e.MoveCursor()
 }
 
 func (e *Editor) HideCursor() {
@@ -151,10 +183,14 @@ func (e *Editor) ReadKey(ctx context.Context) chan Key {
 	return ks
 }
 
-func (e *Editor) WindowSize() (int, int, error) {
+func (e *Editor) UpdateWindowSize() error {
 	w, err := unix.IoctlGetWinsize(1, unix.TIOCGWINSZ)
 	if err != nil {
-		return 0, 0, err
+		return err
 	}
-	return int(w.Row), int(w.Col), nil
+	e.Cols = int(w.Col)
+	e.Rows = int(w.Row)
+
+	fmt.Println(e.Cols, e.Rows)
+	return nil
 }
