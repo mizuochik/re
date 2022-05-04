@@ -88,6 +88,14 @@ func (e *Editor) HandleKey(k Key, cancel func()) error {
 			cancel()
 		case ToControl('A'):
 			e.MoveBeginning()
+		case ToControl('P'):
+			e.MoveAbove()
+		case ToControl('N'):
+			e.MoveBelow()
+		case ToControl('F'):
+			e.MoveRight()
+		case ToControl('B'):
+			e.MoveLeft()
 		case ToControl('E'):
 			e.MoveEnd()
 		}
