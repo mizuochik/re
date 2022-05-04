@@ -74,7 +74,12 @@ func (e *Editor) DrawRows() error {
 func (e *Editor) HandleKey(k Key) error {
 	switch {
 	case k.IsControl():
-		return nil
+		switch k.Value {
+		case ToControl('A'):
+			e.MoveBeginning()
+		case ToControl('E'):
+			e.MoveEnd()
+		}
 	case k.IsEscaped():
 		switch k.EscapedSequence[0] {
 		case 'A':
@@ -86,7 +91,6 @@ func (e *Editor) HandleKey(k Key) error {
 		case 'D':
 			e.MoveLeft()
 		}
-		e.MoveCursor()
 	default:
 		fmt.Printf("%d (%c) ", k.Value, k.Value)
 	}
@@ -122,6 +126,16 @@ func (e *Editor) MoveLeft() {
 		return
 	}
 	e.Cx--
+	e.MoveCursor()
+}
+
+func (e *Editor) MoveBeginning() {
+	e.Cx = 0
+	e.MoveCursor()
+}
+
+func (e *Editor) MoveEnd() {
+	e.Cx = e.Cols - 1
 	e.MoveCursor()
 }
 
