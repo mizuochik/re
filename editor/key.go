@@ -8,7 +8,7 @@ type Key struct {
 }
 
 func (k Key) IsControl() bool {
-	return unicode.IsControl(k.Value)
+	return !k.IsEscaped() && unicode.IsControl(k.Value)
 }
 
 func (k Key) IsEscaped() bool {
