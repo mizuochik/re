@@ -21,15 +21,8 @@ func main() {
 	if err := e.DrawRows(); err != nil {
 		panic(err)
 	}
-
 	keys := e.ReadKey(ctx)
 	for k := range keys {
-		switch {
-		case !k.IsEscaped() && k.Value == 'q':
-			e.RefreshScreen()
-			cancel()
-		default:
-			e.HandleKey(k)
-		}
+		e.HandleKey(k, cancel)
 	}
 }

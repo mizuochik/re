@@ -71,10 +71,13 @@ func (e *Editor) DrawRows() error {
 	return nil
 }
 
-func (e *Editor) HandleKey(k Key) error {
+func (e *Editor) HandleKey(k Key, cancel func()) error {
 	switch {
 	case k.IsControl():
 		switch k.Value {
+		case ToControl('Q'):
+			e.RefreshScreen()
+			cancel()
 		case ToControl('A'):
 			e.MoveBeginning()
 		case ToControl('E'):
