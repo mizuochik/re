@@ -54,7 +54,7 @@ func (e *Editor) ClearScreen() {
 
 func (e *Editor) RefreshCursor() {
 	minCy := 0
-	maxCy := len(e.Buffer) - e.Vscroll - 1
+	maxCy := len(e.Buffer)
 	if e.Cy < minCy {
 		e.Cy = minCy
 	}
@@ -62,14 +62,25 @@ func (e *Editor) RefreshCursor() {
 		e.Cy = maxCy
 	}
 	minCx := 0
-	maxCx := len(e.Buffer[e.Cy+e.Vscroll])
+	maxCx := 0
+	if e.Cy < len(e.Buffer) {
+		maxCx = len(e.Buffer[e.Cy])
+	}
 	if e.Cx < minCx {
 		e.Cx = minCx
 	}
 	if e.Cx > maxCx {
 		e.Cx = maxCx
 	}
-	fmt.Printf("\x1b[%d;%dH", e.Cy+1, e.Cx+1)
+	for e.Cy < e.Vscroll || e.Cy > e.Vscroll+e.Rows {
+		if e.Cy < e.Vscroll {
+			e.Scroll(-e.Rows / 4)
+		}
+		if e.Cy > e.Vscroll+e.Rows {
+			e.Scroll(e.Rows / 4)
+		}
+	}
+	fmt.Printf("\x1b[%d;%dH", e.Cy-e.Vscroll+1, e.Cx+1)
 }
 
 func (e *Editor) MoveCursorRelative(x, y int) {
@@ -157,9 +168,9 @@ func (e *Editor) HandleKey(k Key, cancel func()) error {
 		case ToControl('E'):
 			e.MoveEnd()
 		case ToControl('U'):
-			e.Scroll(-e.Rows / 2)
+			e.MoveCursorRelative(0, -e.Rows/2)
 		case ToControl('D'):
-			e.Scroll(e.Rows / 2)
+			e.MoveCursorRelative(0, e.Rows/2)
 		case ToControl('Q'):
 			e.ClearScreen()
 			cancel()
@@ -207,7 +218,7 @@ func (e *Editor) MoveEnd() {
 
 func (e *Editor) Scroll(rows int) {
 	e.Vscroll += rows
-	maxVscroll := len(e.Buffer) - e.Rows
+	maxVscroll := len(e.Buffer) - e.Rows*3/4
 	if e.Vscroll > maxVscroll {
 		e.Vscroll = maxVscroll
 	}
