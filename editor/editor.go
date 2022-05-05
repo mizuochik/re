@@ -157,9 +157,9 @@ func (e *Editor) HandleKey(k Key, cancel func()) error {
 		case ToControl('E'):
 			e.MoveEnd()
 		case ToControl('U'):
-			e.ScrollUp()
+			e.Scroll(-e.Rows / 2)
 		case ToControl('D'):
-			e.ScrollDown()
+			e.Scroll(e.Rows / 2)
 		case ToControl('Q'):
 			e.ClearScreen()
 			cancel()
@@ -205,20 +205,12 @@ func (e *Editor) MoveEnd() {
 	e.MoveCursorAbsolute(e.Cols-1, -1)
 }
 
-func (e *Editor) ScrollDown() {
-	e.Vscroll += e.Rows / 2
+func (e *Editor) Scroll(rows int) {
+	e.Vscroll += rows
 	maxVscroll := len(e.Buffer) - e.Rows
-	if maxVscroll < 0 {
-		maxVscroll = 0
-	}
 	if e.Vscroll > maxVscroll {
 		e.Vscroll = maxVscroll
 	}
-	e.RefreshScreen()
-}
-
-func (e *Editor) ScrollUp() {
-	e.Vscroll -= e.Rows / 2
 	minVscroll := 0
 	if e.Vscroll < minVscroll {
 		e.Vscroll = minVscroll
