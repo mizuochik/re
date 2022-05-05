@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"syscall"
 
 	"github.com/pkg/term/termios"
@@ -99,6 +100,19 @@ func (e *Editor) MoveCursorAbsolute(x, y int) {
 	e.RefreshCursor()
 }
 
+func (e *Editor) DrawStatusBar() {
+	left := "re/main.go"
+	right := "Saved"
+	padding := e.Cols - len(left) - len(right)
+	fmt.Print("\x1b[2K")
+	fmt.Print("\x1b[37;40m") // white on black
+	fmt.Print(left)
+	fmt.Print(strings.Repeat(" ", padding))
+	fmt.Print(right)
+	fmt.Print("\x1b[0m") // reset color
+	fmt.Print("\r\n")
+}
+
 func (e *Editor) RefreshScreen() error {
 	e.HideCursor()
 	defer e.ShowCursor()
@@ -106,10 +120,7 @@ func (e *Editor) RefreshScreen() error {
 	if err := e.UpdateWindowSize(); err != nil {
 		return err
 	}
-	fmt.Print("\x1b[2K")
-	fmt.Print(" RE ")
-	fmt.Print("main.go")
-	fmt.Print("\r\n")
+	e.DrawStatusBar()
 	for i := 0; i < e.Rows; i++ {
 		fmt.Print("\x1b[2K")
 		if i+e.Vscroll < len(e.Buffer) {
