@@ -144,11 +144,6 @@ func (e *Editor) HandleKey(k Key, cancel func()) error {
 	switch {
 	case k.IsControl():
 		switch k.Value {
-		case ToControl('Q'):
-			e.ClearScreen()
-			cancel()
-		case ToControl('A'):
-			e.MoveBeginning()
 		case ToControl('P'):
 			e.MoveAbove()
 		case ToControl('N'):
@@ -157,8 +152,17 @@ func (e *Editor) HandleKey(k Key, cancel func()) error {
 			e.MoveRight()
 		case ToControl('B'):
 			e.MoveLeft()
+		case ToControl('A'):
+			e.MoveBeginning()
 		case ToControl('E'):
 			e.MoveEnd()
+		case ToControl('U'):
+			e.ScrollUp()
+		case ToControl('D'):
+			e.ScrollDown()
+		case ToControl('Q'):
+			e.ClearScreen()
+			cancel()
 		}
 	case k.IsEscaped():
 		switch k.EscapedSequence[0] {
@@ -199,6 +203,27 @@ func (e *Editor) MoveBeginning() {
 
 func (e *Editor) MoveEnd() {
 	e.MoveCursorAbsolute(e.Cols-1, -1)
+}
+
+func (e *Editor) ScrollDown() {
+	e.Vscroll += e.Rows / 2
+	maxVscroll := len(e.Buffer) - e.Rows
+	if maxVscroll < 0 {
+		maxVscroll = 0
+	}
+	if e.Vscroll > maxVscroll {
+		e.Vscroll = maxVscroll
+	}
+	e.RefreshScreen()
+}
+
+func (e *Editor) ScrollUp() {
+	e.Vscroll -= e.Rows / 2
+	minVscroll := 0
+	if e.Vscroll < minVscroll {
+		e.Vscroll = minVscroll
+	}
+	e.RefreshScreen()
 }
 
 func (e *Editor) HideCursor() {
