@@ -72,11 +72,11 @@ func (e *Editor) RefreshCursor() {
 	if e.Cx > maxCx {
 		e.Cx = maxCx
 	}
-	for e.Cy < e.Vscroll || e.Cy > e.Vscroll+e.Rows {
+	for e.Cy < e.Vscroll || e.Cy >= e.Vscroll+e.Rows {
 		if e.Cy < e.Vscroll {
 			e.Scroll(-e.Rows / 4)
 		}
-		if e.Cy > e.Vscroll+e.Rows {
+		if e.Cy >= e.Vscroll+e.Rows {
 			e.Scroll(e.Rows / 4)
 		}
 	}
