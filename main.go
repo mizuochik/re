@@ -25,8 +25,7 @@ func main() {
 	if err := e.RefreshScreen(); err != nil {
 		panic(err)
 	}
-	keys := e.ReadKey(ctx)
-	for k := range keys {
+	for k := range e.ReadKey(ctx) {
 		e.HandleKey(k, cancel)
 	}
 }
