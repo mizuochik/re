@@ -22,9 +22,7 @@ func main() {
 	if err := e.OpenFile("README.md"); err != nil {
 		panic(err)
 	}
-
-	e.RefreshScreen()
-	if err := e.DrawRows(); err != nil {
+	if err := e.RefreshScreen(); err != nil {
 		panic(err)
 	}
 	keys := e.ReadKey(ctx)

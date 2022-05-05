@@ -46,17 +46,49 @@ func (e *Editor) ResetRawMode() {
 	termios.Tcsetattr(0, unix.TCIFLUSH, &e.OriginalTermios)
 }
 
-func (e *Editor) RefreshScreen() {
+func (e *Editor) ClearScreen() {
 	e.HideCursor()
 	defer e.ShowCursor()
 	fmt.Print("\x1b[2J")
 }
 
-func (e *Editor) MoveCursor() {
+func (e *Editor) RefreshCursor() {
+	minCy := 0
+	maxCy := len(e.Buffer) - e.Vscroll - 1
+	if e.Cy < minCy {
+		e.Cy = minCy
+	}
+	if e.Cy > maxCy {
+		e.Cy = maxCy
+	}
+	minCx := 0
+	maxCx := len(e.Buffer[e.Cy+e.Vscroll])
+	if e.Cx < minCx {
+		e.Cx = minCx
+	}
+	if e.Cx > maxCx {
+		e.Cx = maxCx
+	}
 	fmt.Printf("\x1b[%d;%dH", e.Cy+1, e.Cx+1)
 }
 
-func (e *Editor) DrawRows() error {
+func (e *Editor) MoveCursorRelative(x, y int) {
+	e.Cx += x
+	e.Cy += y
+	e.RefreshCursor()
+}
+
+func (e *Editor) MoveCursorAbsolute(x, y int) {
+	if x >= 0 {
+		e.Cx = x
+	}
+	if y >= 0 {
+		e.Cy = y
+	}
+	e.RefreshCursor()
+}
+
+func (e *Editor) RefreshScreen() error {
 	e.HideCursor()
 	defer e.ShowCursor()
 	fmt.Print("\x1b[1;1H")
@@ -64,6 +96,7 @@ func (e *Editor) DrawRows() error {
 		return err
 	}
 	for i := 0; i < e.Rows; i++ {
+		fmt.Print("\x1b[2K")
 		if i+e.Vscroll < len(e.Buffer) {
 			fmt.Print(e.Buffer[i+e.Vscroll])
 		} else {
@@ -73,7 +106,7 @@ func (e *Editor) DrawRows() error {
 			fmt.Print("\r\n")
 		}
 	}
-	e.MoveCursor()
+	e.RefreshCursor()
 	return nil
 }
 
@@ -112,7 +145,7 @@ func (e *Editor) HandleKey(k Key, cancel func()) error {
 	case k.IsControl():
 		switch k.Value {
 		case ToControl('Q'):
-			e.RefreshScreen()
+			e.ClearScreen()
 			cancel()
 		case ToControl('A'):
 			e.MoveBeginning()
@@ -145,45 +178,27 @@ func (e *Editor) HandleKey(k Key, cancel func()) error {
 }
 
 func (e *Editor) MoveAbove() {
-	if e.Cy <= 0 {
-		return
-	}
-	e.Cy--
-	e.MoveCursor()
+	e.MoveCursorRelative(0, -1)
 }
 
 func (e *Editor) MoveBelow() {
-	if e.Cy >= e.Rows-1 {
-		return
-	}
-	e.Cy++
-	e.MoveCursor()
+	e.MoveCursorRelative(0, 1)
 }
 
 func (e *Editor) MoveRight() {
-	if e.Cx >= e.Cols-1 {
-		return
-	}
-	e.Cx++
-	e.MoveCursor()
+	e.MoveCursorRelative(1, 0)
 }
 
 func (e *Editor) MoveLeft() {
-	if e.Cx <= 0 {
-		return
-	}
-	e.Cx--
-	e.MoveCursor()
+	e.MoveCursorRelative(-1, 0)
 }
 
 func (e *Editor) MoveBeginning() {
-	e.Cx = 0
-	e.MoveCursor()
+	e.MoveCursorAbsolute(0, -1)
 }
 
 func (e *Editor) MoveEnd() {
-	e.Cx = e.Cols - 1
-	e.MoveCursor()
+	e.MoveCursorAbsolute(e.Cols-1, -1)
 }
 
 func (e *Editor) HideCursor() {
