@@ -285,3 +285,13 @@ func (e *Editor) UpdateWindowSize() error {
 	e.Rows = int(w.Row)
 	return nil
 }
+
+func (e *Editor) Debugf(format string, a ...interface{}) {
+	f, err := os.OpenFile("/tmp/re.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0700)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	fmt.Fprintf(f, format, a...)
+	fmt.Fprintln(f)
+}
