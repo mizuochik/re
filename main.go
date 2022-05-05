@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"os"
 	"os/signal"
 	"syscall"
 
@@ -19,7 +20,7 @@ func main() {
 	}
 	defer e.ResetRawMode()
 
-	if err := e.OpenFile("README.md"); err != nil {
+	if err := e.OpenFile(os.Args[1]); err != nil {
 		panic(err)
 	}
 	if err := e.RefreshScreen(); err != nil {
