@@ -80,7 +80,7 @@ func (e *Editor) RefreshCursor() {
 			e.Scroll(e.Rows / 4)
 		}
 	}
-	fmt.Printf("\x1b[%d;%dH", e.Cy-e.Vscroll+1, e.Cx+1)
+	fmt.Printf("\x1b[%d;%dH", e.Cy-e.Vscroll+2, e.Cx+1) // for status bar
 }
 
 func (e *Editor) MoveCursorRelative(x, y int) {
@@ -106,6 +106,10 @@ func (e *Editor) RefreshScreen() error {
 	if err := e.UpdateWindowSize(); err != nil {
 		return err
 	}
+	fmt.Print("\x1b[2K")
+	fmt.Print(" RE ")
+	fmt.Print("main.go")
+	fmt.Print("\r\n")
 	for i := 0; i < e.Rows; i++ {
 		fmt.Print("\x1b[2K")
 		if i+e.Vscroll < len(e.Buffer) {
@@ -293,7 +297,7 @@ func (e *Editor) UpdateWindowSize() error {
 		return err
 	}
 	e.Cols = int(w.Col)
-	e.Rows = int(w.Row)
+	e.Rows = int(w.Row) - 1 // for status bar
 	return nil
 }
 
