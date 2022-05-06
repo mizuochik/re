@@ -4,8 +4,11 @@ import "unicode"
 
 type Screen struct {
 	Width   int
+	Height  int
 	Rows    []string
 	Vscroll int
+	Cx      int
+	Cy      int
 }
 
 func (s *Screen) Update(buffer []string) {
@@ -34,6 +37,12 @@ func (s *Screen) Scroll(diff int) {
 	s.Vscroll += diff
 }
 
-func (s *Screen) View(Height int) []string {
-	return nil
+func (s *Screen) View() []string {
+	var bottom int
+	if s.Height < len(s.Rows) {
+		bottom = s.Height + s.Vscroll
+	} else {
+		bottom = s.Height + len(s.Rows)
+	}
+	return s.Rows[s.Vscroll:bottom]
 }

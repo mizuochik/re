@@ -1,9 +1,10 @@
-package editor
+package editor_test
 
 import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/mizuochikeita/re/editor"
 )
 
 func TestScreen(t *testing.T) {
@@ -33,11 +34,33 @@ func TestScreen(t *testing.T) {
 				wantRows:    []string{"a", "あい", "b"},
 			},
 		} {
-			sc := &Screen{
+			sc := &editor.Screen{
 				Width: c.givenWidth,
 			}
 			sc.Update(c.givenBuffer)
 			if diff := cmp.Diff(c.wantRows, sc.Rows); diff != "" {
+				t.Errorf("%s: %s", c.desc, diff)
+			}
+		}
+	})
+
+	t.Run("View()", func(t *testing.T) {
+		for _, c := range []struct {
+			desc         string
+			givenHeight  int
+			givenVscroll int
+			givenRows    []string
+			want         []string
+		}{
+			{},
+		} {
+			sc := &editor.Screen{
+				Height:  c.givenHeight,
+				Vscroll: c.givenVscroll,
+				Rows:    c.givenRows,
+			}
+			got := sc.View()
+			if diff := cmp.Diff(c.want, got); diff != "" {
 				t.Errorf("%s: %s", c.desc, diff)
 			}
 		}
