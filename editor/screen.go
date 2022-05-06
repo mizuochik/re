@@ -38,11 +38,9 @@ func (s *Screen) Scroll(diff int) {
 }
 
 func (s *Screen) View() []string {
-	var bottom int
-	if s.Height < len(s.Rows) {
-		bottom = s.Height + s.Vscroll
-	} else {
-		bottom = s.Height + len(s.Rows)
+	bottom := s.Vscroll + s.Height
+	if bottom > len(s.Rows) {
+		bottom = len(s.Rows)
 	}
 	return s.Rows[s.Vscroll:bottom]
 }

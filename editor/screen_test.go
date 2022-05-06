@@ -52,7 +52,27 @@ func TestScreen(t *testing.T) {
 			givenRows    []string
 			want         []string
 		}{
-			{},
+			{
+				desc:         "no scroll",
+				givenHeight:  2,
+				givenVscroll: 0,
+				givenRows:    []string{"a", "b", "c"},
+				want:         []string{"a", "b"},
+			},
+			{
+				desc:         "scroll to bottom",
+				givenHeight:  2,
+				givenVscroll: 1,
+				givenRows:    []string{"a", "b", "c"},
+				want:         []string{"b", "c"},
+			},
+			{
+				desc:         "scroll to over bottom",
+				givenHeight:  2,
+				givenVscroll: 2,
+				givenRows:    []string{"a", "b", "c"},
+				want:         []string{"c"},
+			},
 		} {
 			sc := &editor.Screen{
 				Height:  c.givenHeight,
