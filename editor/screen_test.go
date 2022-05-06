@@ -1,6 +1,7 @@
 package editor_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -81,6 +82,47 @@ func TestScreen(t *testing.T) {
 			}
 			got := sc.View()
 			if diff := cmp.Diff(c.want, got); diff != "" {
+				t.Errorf("%s: %s", c.desc, diff)
+			}
+		}
+	})
+
+	t.Run("MoveCursorHorizontally()", func(t *testing.T) {
+		for _, c := range []struct {
+			desc      string
+			givenRows []string
+			givenCx   int
+			givenCy   int
+			givenDiff int
+			wantCx    int
+			wantCy    int
+		}{
+			{
+				desc:      "forward",
+				givenRows: []string{"abcd"},
+				givenCx:   0,
+				givenCy:   0,
+				givenDiff: 2,
+				wantCx:    2,
+				wantCy:    0,
+			},
+			{
+				desc:      "back",
+				givenRows: []string{"abcd"},
+				givenCx:   3,
+				givenCy:   0,
+				givenDiff: -2,
+				wantCx:    1,
+				wantCy:    0,
+			},
+		} {
+			sc := &editor.Screen{
+				Rows: c.givenRows,
+				Cx:   c.givenCx,
+				Cy:   c.givenCy,
+			}
+			sc.MoveCursorHorizontally(c.givenDiff)
+			if diff := cmp.Diff(fmt.Sprintf("%d,%d", c.wantCx, c.wantCy), fmt.Sprintf("%d,%d", sc.Cx, sc.Cy)); diff != "" {
 				t.Errorf("%s: %s", c.desc, diff)
 			}
 		}
