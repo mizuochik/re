@@ -416,4 +416,51 @@ func TestScreen(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("CursorPosition()", func(t *testing.T) {
+		tests := []struct {
+			desc    string
+			rows    []*editor.ScreenRow
+			cx      int
+			cy      int
+			vscroll int
+			wantX   int
+			wantY   int
+		}{
+			{
+				desc: "get relative position",
+				rows: []*editor.ScreenRow{
+					{
+						ScreenXs: []int{},
+					},
+					{
+						ScreenXs: []int{},
+					},
+					{
+						ScreenXs: []int{},
+					},
+					{
+						ScreenXs: []int{0, 2},
+					},
+				},
+				cx:      1,
+				cy:      3,
+				vscroll: 2,
+				wantX:   2,
+				wantY:   1,
+			},
+		}
+		for _, tt := range tests {
+			sc := &editor.Screen{
+				Rows:    tt.rows,
+				Cx:      tt.cx,
+				Cy:      tt.cy,
+				Vscroll: tt.vscroll,
+			}
+			gotX, gotY := sc.CursorPosition()
+			if diff := cmp.Diff(fmt.Sprintf("%d,%d", tt.wantX, tt.wantY), fmt.Sprintf("%d,%d", gotX, gotY)); diff != "" {
+				t.Errorf("%s: %s", tt.desc, diff)
+			}
+		}
+	})
 }

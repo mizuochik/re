@@ -153,3 +153,9 @@ func (s *Screen) MoveCursorVertically(diff int) {
 		}
 	}
 }
+
+func (s *Screen) CursorPosition() (int, int) {
+	x := s.Rows[s.Cy].ScreenXs[s.Cx]
+	y := s.Cy - s.Vscroll
+	return x, y
+}
