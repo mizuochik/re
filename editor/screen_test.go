@@ -10,7 +10,7 @@ import (
 
 func TestScreen(t *testing.T) {
 	t.Run("Update()", func(t *testing.T) {
-		for _, c := range []struct {
+		tests := []struct {
 			desc        string
 			givenWidth  int
 			givenBuffer []string
@@ -77,19 +77,20 @@ func TestScreen(t *testing.T) {
 					},
 				},
 			},
-		} {
+		}
+		for _, tt := range tests {
 			sc := &editor.Screen{
-				Width: c.givenWidth,
+				Width: tt.givenWidth,
 			}
-			sc.Update(c.givenBuffer)
-			if diff := cmp.Diff(c.wantRows, sc.Rows); diff != "" {
-				t.Errorf("%s: %s", c.desc, diff)
+			sc.Update(tt.givenBuffer)
+			if diff := cmp.Diff(tt.wantRows, sc.Rows); diff != "" {
+				t.Errorf("%s: %s", tt.desc, diff)
 			}
 		}
 	})
 
 	t.Run("Scroll()", func(t *testing.T) {
-		for _, c := range []struct {
+		tests := []struct {
 			desc         string
 			givenHeight  int
 			givenVscroll int
@@ -149,21 +150,22 @@ func TestScreen(t *testing.T) {
 				givenDiff:   -3,
 				wantVscroll: 0,
 			},
-		} {
+		}
+		for _, tt := range tests {
 			sc := &editor.Screen{
-				Height:  c.givenHeight,
-				Rows:    c.givenRows,
-				Vscroll: c.givenVscroll,
+				Height:  tt.givenHeight,
+				Rows:    tt.givenRows,
+				Vscroll: tt.givenVscroll,
 			}
-			sc.Scroll(c.givenDiff)
-			if diff := cmp.Diff(c.wantVscroll, sc.Vscroll); diff != "" {
-				t.Errorf("%s: %s", c.desc, diff)
+			sc.Scroll(tt.givenDiff)
+			if diff := cmp.Diff(tt.wantVscroll, sc.Vscroll); diff != "" {
+				t.Errorf("%s: %s", tt.desc, diff)
 			}
 		}
 	})
 
 	t.Run("View()", func(t *testing.T) {
-		for _, c := range []struct {
+		tests := []struct {
 			desc         string
 			givenHeight  int
 			givenVscroll int
@@ -211,21 +213,22 @@ func TestScreen(t *testing.T) {
 					{Body: "c", ScreenXs: []int{0}, Len: 1},
 				},
 			},
-		} {
+		}
+		for _, tt := range tests {
 			sc := &editor.Screen{
-				Height:  c.givenHeight,
-				Vscroll: c.givenVscroll,
-				Rows:    c.givenRows,
+				Height:  tt.givenHeight,
+				Vscroll: tt.givenVscroll,
+				Rows:    tt.givenRows,
 			}
 			got := sc.View()
-			if diff := cmp.Diff(c.want, got); diff != "" {
-				t.Errorf("%s: %s", c.desc, diff)
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Errorf("%s: %s", tt.desc, diff)
 			}
 		}
 	})
 
 	t.Run("MoveCursorHorizontally()", func(t *testing.T) {
-		for _, c := range []struct {
+		tests := []struct {
 			desc      string
 			givenRows []*editor.ScreenRow
 			givenCx   int
@@ -304,21 +307,22 @@ func TestScreen(t *testing.T) {
 				wantCx:    0,
 				wantCy:    0,
 			},
-		} {
+		}
+		for _, tt := range tests {
 			sc := &editor.Screen{
-				Rows: c.givenRows,
-				Cx:   c.givenCx,
-				Cy:   c.givenCy,
+				Rows: tt.givenRows,
+				Cx:   tt.givenCx,
+				Cy:   tt.givenCy,
 			}
-			sc.MoveCursorHorizontally(c.givenDiff)
-			if diff := cmp.Diff(fmt.Sprintf("%d,%d", c.wantCx, c.wantCy), fmt.Sprintf("%d,%d", sc.Cx, sc.Cy)); diff != "" {
-				t.Errorf("%s: %s", c.desc, diff)
+			sc.MoveCursorHorizontally(tt.givenDiff)
+			if diff := cmp.Diff(fmt.Sprintf("%d,%d", tt.wantCx, tt.wantCy), fmt.Sprintf("%d,%d", sc.Cx, sc.Cy)); diff != "" {
+				t.Errorf("%s: %s", tt.desc, diff)
 			}
 		}
 	})
 
 	t.Run("MoveCursorVertically()", func(t *testing.T) {
-		for _, c := range []struct {
+		tests := []struct {
 			desc      string
 			givenRows []*editor.ScreenRow
 			givenCx   int
@@ -399,15 +403,16 @@ func TestScreen(t *testing.T) {
 				wantCx:    1,
 				wantCy:    1,
 			},
-		} {
+		}
+		for _, tt := range tests {
 			sc := &editor.Screen{
-				Rows: c.givenRows,
-				Cx:   c.givenCx,
-				Cy:   c.givenCy,
+				Rows: tt.givenRows,
+				Cx:   tt.givenCx,
+				Cy:   tt.givenCy,
 			}
-			sc.MoveCursorVertically(c.givenDiff)
-			if diff := cmp.Diff(fmt.Sprintf("%d,%d", c.wantCx, c.wantCy), fmt.Sprintf("%d,%d", sc.Cx, sc.Cy)); diff != "" {
-				t.Errorf("%s: %s", c.desc, diff)
+			sc.MoveCursorVertically(tt.givenDiff)
+			if diff := cmp.Diff(fmt.Sprintf("%d,%d", tt.wantCx, tt.wantCy), fmt.Sprintf("%d,%d", sc.Cx, sc.Cy)); diff != "" {
+				t.Errorf("%s: %s", tt.desc, diff)
 			}
 		}
 	})
