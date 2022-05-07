@@ -265,6 +265,18 @@ func TestScreen(t *testing.T) {
 				wantCx:    0,
 				wantCy:    1,
 			},
+			{
+				desc: "go up",
+				givenRows: []*editor.ScreenRow{
+					{Body: "ab", Len: 2, ScreenXs: []int{0, 1}},
+					{Body: "bc", Len: 2, ScreenXs: []int{0, 1}},
+				},
+				givenCx:   1,
+				givenCy:   1,
+				givenDiff: -1,
+				wantCx:    1,
+				wantCy:    0,
+			},
 		} {
 			sc := &editor.Screen{
 				Rows: c.givenRows,
