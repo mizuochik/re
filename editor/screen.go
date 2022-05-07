@@ -68,7 +68,7 @@ func (s *Screen) MoveCursorHorizontally(diff int) {
 			if len(s.Rows[s.Cy]) <= 0 {
 				s.Cx = 0
 			} else {
-				s.Cx--
+				s.Cx = len(s.Rows[s.Cy]) - 1
 			}
 			s.MoveCursorHorizontally(diff + rest + 1)
 		}
