@@ -71,7 +71,17 @@ func (s *Screen) Update(buffer []string) {
 }
 
 func (s *Screen) Scroll(diff int) {
-	s.Vscroll += diff
+	v := s.Vscroll
+	v += diff
+	maxV := len(s.Rows) - s.Height
+	minV := 0
+	if v > maxV {
+		v = maxV
+	}
+	if v < minV {
+		v = minV
+	}
+	s.Vscroll = v
 }
 
 func (s *Screen) View() []*ScreenRow {

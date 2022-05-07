@@ -88,6 +88,80 @@ func TestScreen(t *testing.T) {
 		}
 	})
 
+	t.Run("Scroll()", func(t *testing.T) {
+		for _, c := range []struct {
+			desc         string
+			givenHeight  int
+			givenVscroll int
+			givenRows    []*editor.ScreenRow
+			givenDiff    int
+			wantVscroll  int
+		}{
+			{
+				desc:         "scroll down",
+				givenHeight:  2,
+				givenVscroll: 0,
+				givenRows: []*editor.ScreenRow{
+					{},
+					{},
+					{},
+					{},
+				},
+				givenDiff:   1,
+				wantVscroll: 1,
+			},
+			{
+				desc:         "scroll down",
+				givenHeight:  2,
+				givenVscroll: 2,
+				givenRows: []*editor.ScreenRow{
+					{},
+					{},
+					{},
+					{},
+				},
+				givenDiff:   -1,
+				wantVscroll: 1,
+			},
+			{
+				desc:         "scroll down over bottom",
+				givenHeight:  2,
+				givenVscroll: 0,
+				givenRows: []*editor.ScreenRow{
+					{},
+					{},
+					{},
+					{},
+				},
+				givenDiff:   3,
+				wantVscroll: 2,
+			},
+			{
+				desc:         "scroll up over top",
+				givenHeight:  2,
+				givenVscroll: 2,
+				givenRows: []*editor.ScreenRow{
+					{},
+					{},
+					{},
+					{},
+				},
+				givenDiff:   -3,
+				wantVscroll: 0,
+			},
+		} {
+			sc := &editor.Screen{
+				Height:  c.givenHeight,
+				Rows:    c.givenRows,
+				Vscroll: c.givenVscroll,
+			}
+			sc.Scroll(c.givenDiff)
+			if diff := cmp.Diff(c.wantVscroll, sc.Vscroll); diff != "" {
+				t.Errorf("%s: %s", c.desc, diff)
+			}
+		}
+	})
+
 	t.Run("View()", func(t *testing.T) {
 		for _, c := range []struct {
 			desc         string
