@@ -60,10 +60,12 @@ func TestScreen(t *testing.T) {
 					{
 						Body:     "ab",
 						ScreenXs: []int{0, 1},
+						Len:      2,
 					},
 					{
 						Body:     "cd",
 						ScreenXs: []int{0, 1},
+						Len:      2,
 					},
 				},
 			},
@@ -75,10 +77,12 @@ func TestScreen(t *testing.T) {
 					{
 						Body:     "あ",
 						ScreenXs: []int{0},
+						Len:      1,
 					},
 					{
 						Body:     "い",
 						ScreenXs: []int{0},
+						Len:      1,
 					},
 				},
 			},
@@ -90,18 +94,22 @@ func TestScreen(t *testing.T) {
 					{
 						Body:     "a",
 						ScreenXs: []int{0},
+						Len:      1,
 					},
 					{
 						Body:     "あ",
 						ScreenXs: []int{0},
+						Len:      1,
 					},
 					{
 						Body:     "い",
 						ScreenXs: []int{0},
+						Len:      1,
 					},
 					{
 						Body:     "b",
 						ScreenXs: []int{0},
+						Len:      1,
 					},
 				},
 			},

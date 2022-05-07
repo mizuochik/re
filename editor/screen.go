@@ -16,6 +16,7 @@ type Screen struct {
 
 type ScreenRow struct {
 	Body     string
+	Len      int
 	ScreenXs []int
 }
 
@@ -37,10 +38,12 @@ func (s *Screen) Update_(buffer []string) {
 	var rs []*ScreenRow
 	for _, row := range buffer {
 		w := 0
+		bi := 0
 		l := 0
 		var xs []int
 		for i, c := range row {
 			xs = append(xs, w)
+			l++
 			bw := w
 			if c <= unicode.MaxASCII {
 				w++
@@ -49,17 +52,20 @@ func (s *Screen) Update_(buffer []string) {
 			}
 			if w > s.Width {
 				rs = append(rs, &ScreenRow{
-					Body:     row[l:i],
+					Body:     row[bi:i],
 					ScreenXs: append([]int(nil), xs[:len(xs)-1]...),
+					Len:      l - 1,
 				})
-				l = i
+				bi = i
+				l = 1
 				w = w - bw
 				xs = []int{0}
 			}
 		}
 		rs = append(rs, &ScreenRow{
-			Body:     row[l:],
+			Body:     row[bi:],
 			ScreenXs: append([]int(nil), xs...),
+			Len:      l,
 		})
 	}
 	s.Rows_ = rs
