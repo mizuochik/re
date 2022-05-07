@@ -14,42 +14,6 @@ func TestScreen(t *testing.T) {
 			desc        string
 			givenWidth  int
 			givenBuffer []string
-			wantRows    []string
-		}{
-			{
-				desc:        "wraps long lines",
-				givenWidth:  2,
-				givenBuffer: []string{"abcd"},
-				wantRows:    []string{"ab", "cd"},
-			},
-			{
-				desc:        "considers non-ascii characters",
-				givenWidth:  2,
-				givenBuffer: []string{"あい"},
-				wantRows:    []string{"あ", "い"},
-			},
-			{
-				desc:        "considers ascii and non-ascii characters",
-				givenWidth:  2,
-				givenBuffer: []string{"aあいb"},
-				wantRows:    []string{"a", "あい", "b"},
-			},
-		} {
-			sc := &editor.Screen{
-				Width: c.givenWidth,
-			}
-			sc.Update(c.givenBuffer)
-			if diff := cmp.Diff(c.wantRows, sc.Rows); diff != "" {
-				t.Errorf("%s: %s", c.desc, diff)
-			}
-		}
-	})
-
-	t.Run("Update_()", func(t *testing.T) {
-		for _, c := range []struct {
-			desc        string
-			givenWidth  int
-			givenBuffer []string
 			wantRows    []*editor.ScreenRow
 		}{
 			{
@@ -117,8 +81,8 @@ func TestScreen(t *testing.T) {
 			sc := &editor.Screen{
 				Width: c.givenWidth,
 			}
-			sc.Update_(c.givenBuffer)
-			if diff := cmp.Diff(c.wantRows, sc.Rows_); diff != "" {
+			sc.Update(c.givenBuffer)
+			if diff := cmp.Diff(c.wantRows, sc.Rows); diff != "" {
 				t.Errorf("%s: %s", c.desc, diff)
 			}
 		}
@@ -129,29 +93,49 @@ func TestScreen(t *testing.T) {
 			desc         string
 			givenHeight  int
 			givenVscroll int
-			givenRows    []string
-			want         []string
+			givenRows    []*editor.ScreenRow
+			want         []*editor.ScreenRow
 		}{
 			{
 				desc:         "no scroll",
 				givenHeight:  2,
 				givenVscroll: 0,
-				givenRows:    []string{"a", "b", "c"},
-				want:         []string{"a", "b"},
+				givenRows: []*editor.ScreenRow{
+					{Body: "a", ScreenXs: []int{0}, Len: 1},
+					{Body: "b", ScreenXs: []int{0}, Len: 1},
+					{Body: "c", ScreenXs: []int{0}, Len: 1},
+				},
+				want: []*editor.ScreenRow{
+					{Body: "a", ScreenXs: []int{0}, Len: 1},
+					{Body: "b", ScreenXs: []int{0}, Len: 1},
+				},
 			},
 			{
 				desc:         "scroll to bottom",
 				givenHeight:  2,
 				givenVscroll: 1,
-				givenRows:    []string{"a", "b", "c"},
-				want:         []string{"b", "c"},
+				givenRows: []*editor.ScreenRow{
+					{Body: "a", ScreenXs: []int{0}, Len: 1},
+					{Body: "b", ScreenXs: []int{0}, Len: 1},
+					{Body: "c", ScreenXs: []int{0}, Len: 1},
+				},
+				want: []*editor.ScreenRow{
+					{Body: "b", ScreenXs: []int{0}, Len: 1},
+					{Body: "c", ScreenXs: []int{0}, Len: 1},
+				},
 			},
 			{
 				desc:         "scroll to over bottom",
 				givenHeight:  2,
 				givenVscroll: 2,
-				givenRows:    []string{"a", "b", "c"},
-				want:         []string{"c"},
+				givenRows: []*editor.ScreenRow{
+					{Body: "a", ScreenXs: []int{0}, Len: 1},
+					{Body: "b", ScreenXs: []int{0}, Len: 1},
+					{Body: "c", ScreenXs: []int{0}, Len: 1},
+				},
+				want: []*editor.ScreenRow{
+					{Body: "c", ScreenXs: []int{0}, Len: 1},
+				},
 			},
 		} {
 			sc := &editor.Screen{
@@ -169,7 +153,7 @@ func TestScreen(t *testing.T) {
 	t.Run("MoveCursorHorizontally()", func(t *testing.T) {
 		for _, c := range []struct {
 			desc      string
-			givenRows []string
+			givenRows []*editor.ScreenRow
 			givenCx   int
 			givenCy   int
 			givenDiff int
@@ -177,8 +161,10 @@ func TestScreen(t *testing.T) {
 			wantCy    int
 		}{
 			{
-				desc:      "forward",
-				givenRows: []string{"abcd"},
+				desc: "forward",
+				givenRows: []*editor.ScreenRow{
+					{Body: "abcd", Len: 4, ScreenXs: []int{0, 1, 2, 3}},
+				},
 				givenCx:   0,
 				givenCy:   0,
 				givenDiff: 2,
@@ -186,8 +172,10 @@ func TestScreen(t *testing.T) {
 				wantCy:    0,
 			},
 			{
-				desc:      "back",
-				givenRows: []string{"abcd"},
+				desc: "back",
+				givenRows: []*editor.ScreenRow{
+					{Body: "abcd", Len: 4, ScreenXs: []int{0, 1, 2, 3}},
+				},
 				givenCx:   3,
 				givenCy:   0,
 				givenDiff: -2,
@@ -195,8 +183,11 @@ func TestScreen(t *testing.T) {
 				wantCy:    0,
 			},
 			{
-				desc:      "forward to next line",
-				givenRows: []string{"ab", "cd"},
+				desc: "forward to next line",
+				givenRows: []*editor.ScreenRow{
+					{Body: "ab", Len: 2, ScreenXs: []int{0, 1}},
+					{Body: "cd", Len: 2, ScreenXs: []int{0, 1}},
+				},
 				givenCx:   0,
 				givenCy:   0,
 				givenDiff: 2,
@@ -204,8 +195,11 @@ func TestScreen(t *testing.T) {
 				wantCy:    1,
 			},
 			{
-				desc:      "forward to end of screen",
-				givenRows: []string{"ab", "cd"},
+				desc: "forward to end of screen",
+				givenRows: []*editor.ScreenRow{
+					{Body: "ab", Len: 2, ScreenXs: []int{0, 1}},
+					{Body: "cd", Len: 2, ScreenXs: []int{0, 1}},
+				},
 				givenCx:   0,
 				givenCy:   0,
 				givenDiff: 4,
@@ -213,8 +207,11 @@ func TestScreen(t *testing.T) {
 				wantCy:    1,
 			},
 			{
-				desc:      "back to before line",
-				givenRows: []string{"ab", "cd"},
+				desc: "back to before line",
+				givenRows: []*editor.ScreenRow{
+					{Body: "ab", Len: 2, ScreenXs: []int{0, 1}},
+					{Body: "cd", Len: 2, ScreenXs: []int{0, 1}},
+				},
 				givenCx:   1,
 				givenCy:   1,
 				givenDiff: -2,
@@ -222,8 +219,11 @@ func TestScreen(t *testing.T) {
 				wantCy:    0,
 			},
 			{
-				desc:      "back to start of screen",
-				givenRows: []string{"ab", "cd"},
+				desc: "back to start of screen",
+				givenRows: []*editor.ScreenRow{
+					{Body: "ab", Len: 2, ScreenXs: []int{0, 1}},
+					{Body: "cd", Len: 2, ScreenXs: []int{0, 1}},
+				},
 				givenCx:   1,
 				givenCy:   1,
 				givenDiff: -4,
