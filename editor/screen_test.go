@@ -301,6 +301,30 @@ func TestScreen(t *testing.T) {
 				wantCx:    1,
 				wantCy:    0,
 			},
+			{
+				desc: "go down and keep x on screen",
+				givenRows: []*editor.ScreenRow{
+					{Body: "あいう", Len: 3, ScreenXs: []int{0, 2, 4}},
+					{Body: "abcdef", Len: 6, ScreenXs: []int{0, 1, 2, 3, 4, 5}},
+				},
+				givenCx:   1,
+				givenCy:   0,
+				givenDiff: 1,
+				wantCx:    2,
+				wantCy:    1,
+			},
+			{
+				desc: "go down and keep x on screen (dest row is shorter than source row)",
+				givenRows: []*editor.ScreenRow{
+					{Body: "あいう", Len: 3, ScreenXs: []int{0, 2, 4}},
+					{Body: "ab", Len: 2, ScreenXs: []int{0, 1}},
+				},
+				givenCx:   2,
+				givenCy:   0,
+				givenDiff: 1,
+				wantCx:    1,
+				wantCy:    1,
+			},
 		} {
 			sc := &editor.Screen{
 				Rows: c.givenRows,

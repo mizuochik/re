@@ -113,7 +113,10 @@ func (s *Screen) MoveCursorHorizontally(diff int) {
 }
 
 func (s *Screen) MoveCursorVertically(diff int) {
-	origSx := s.Rows[s.Cy].ScreenXs[s.Cx]
+	origSx := 0
+	if s.Rows[s.Cy].Len > 0 {
+		origSx = s.Rows[s.Cy].ScreenXs[s.Cx]
+	}
 	if diff > 0 {
 		rest := len(s.Rows) - s.Cy - 1
 		if diff < rest {
@@ -129,9 +132,9 @@ func (s *Screen) MoveCursorVertically(diff int) {
 			s.Cy = 0
 		}
 	}
-	if s.Rows[s.Cy].Len <= 0 {
-		s.Cx = 0
-	} else {
+	s.Cx = 0
+	if s.Rows[s.Cy].Len > 0 {
+		s.Cx = s.Rows[s.Cy].Len - 1
 		for x, sx := range s.Rows[s.Cy].ScreenXs {
 			if sx >= origSx {
 				s.Cx = x
