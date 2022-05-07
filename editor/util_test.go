@@ -9,15 +9,15 @@ import (
 
 func TestToControl(t *testing.T) {
 	tests := []struct {
-		given rune
-		want  rune
+		in   rune
+		want rune
 	}{
-		{given: 'A', want: '\x01'},
-		{given: 'z', want: '\x1a'},
+		{in: 'A', want: '\x01'},
+		{in: 'z', want: '\x1a'},
 	}
 	for _, tt := range tests {
-		if diff := cmp.Diff(tt.want, editor.ToControl(tt.given)); diff != "" {
-			t.Errorf("%c: %s", tt.given, diff)
+		if diff := cmp.Diff(tt.want, editor.ToControl(tt.in)); diff != "" {
+			t.Errorf("%c: %s", tt.in, diff)
 		}
 	}
 }
