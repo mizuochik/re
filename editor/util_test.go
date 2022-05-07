@@ -8,15 +8,16 @@ import (
 )
 
 func TestToControl(t *testing.T) {
-	for _, c := range []struct {
+	tests := []struct {
 		given rune
 		want  rune
 	}{
 		{given: 'A', want: '\x01'},
 		{given: 'z', want: '\x1a'},
-	} {
-		if diff := cmp.Diff(c.want, editor.ToControl(c.given)); diff != "" {
-			t.Errorf("%c: %s", c.given, diff)
+	}
+	for _, tt := range tests {
+		if diff := cmp.Diff(tt.want, editor.ToControl(tt.given)); diff != "" {
+			t.Errorf("%c: %s", tt.given, diff)
 		}
 	}
 }
