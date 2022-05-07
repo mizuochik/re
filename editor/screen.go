@@ -111,3 +111,32 @@ func (s *Screen) MoveCursorHorizontally(diff int) {
 		}
 	}
 }
+
+func (s *Screen) MoveCursorVertically(diff int) {
+	origSx := s.Rows[s.Cy].ScreenXs[s.Cx]
+	if diff > 0 {
+		rest := len(s.Rows) - s.Cy - 1
+		if diff < rest {
+			s.Cy -= diff
+		} else {
+			s.Cy = len(s.Rows) - 1
+		}
+	} else if diff < 0 {
+		rest := s.Cy
+		if -diff < rest {
+			s.Cy += diff
+		} else {
+			s.Cy = 0
+		}
+	}
+	if s.Rows[s.Cy].Len <= 0 {
+		s.Cx = 0
+	} else {
+		for x, sx := range s.Rows[s.Cy].ScreenXs {
+			if sx >= origSx {
+				s.Cx = x
+				break
+			}
+		}
+	}
+}

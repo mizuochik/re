@@ -242,4 +242,39 @@ func TestScreen(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("MoveCursorVertically()", func(t *testing.T) {
+		for _, c := range []struct {
+			desc      string
+			givenRows []*editor.ScreenRow
+			givenCx   int
+			givenCy   int
+			givenDiff int
+			wantCx    int
+			wantCy    int
+		}{
+			{
+				desc: "go down",
+				givenRows: []*editor.ScreenRow{
+					{Body: "ab", Len: 2, ScreenXs: []int{0, 1}},
+					{Body: "bc", Len: 2, ScreenXs: []int{0, 1}},
+				},
+				givenCx:   0,
+				givenCy:   0,
+				givenDiff: 1,
+				wantCx:    0,
+				wantCy:    1,
+			},
+		} {
+			sc := &editor.Screen{
+				Rows: c.givenRows,
+				Cx:   c.givenCx,
+				Cy:   c.givenCy,
+			}
+			sc.MoveCursorVertically(c.givenDiff)
+			if diff := cmp.Diff(fmt.Sprintf("%d,%d", c.wantCx, c.wantCy), fmt.Sprintf("%d,%d", sc.Cx, sc.Cy)); diff != "" {
+				t.Errorf("%s: %s", c.desc, diff)
+			}
+		}
+	})
 }
