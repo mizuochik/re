@@ -45,6 +45,77 @@ func TestScreen(t *testing.T) {
 		}
 	})
 
+	t.Run("Update_()", func(t *testing.T) {
+		for _, c := range []struct {
+			desc        string
+			givenWidth  int
+			givenBuffer []string
+			wantRows    []*editor.ScreenRow
+		}{
+			{
+				desc:        "wraps long lines",
+				givenWidth:  2,
+				givenBuffer: []string{"abcd"},
+				wantRows: []*editor.ScreenRow{
+					{
+						Body:     "ab",
+						ScreenXs: []int{0, 1},
+					},
+					{
+						Body:     "cd",
+						ScreenXs: []int{0, 1},
+					},
+				},
+			},
+			{
+				desc:        "considers non-ascii characters",
+				givenWidth:  2,
+				givenBuffer: []string{"あい"},
+				wantRows: []*editor.ScreenRow{
+					{
+						Body:     "あ",
+						ScreenXs: []int{0},
+					},
+					{
+						Body:     "い",
+						ScreenXs: []int{0},
+					},
+				},
+			},
+			{
+				desc:        "considers ascii and non-ascii characters",
+				givenWidth:  2,
+				givenBuffer: []string{"aあいb"},
+				wantRows: []*editor.ScreenRow{
+					{
+						Body:     "a",
+						ScreenXs: []int{0},
+					},
+					{
+						Body:     "あ",
+						ScreenXs: []int{0},
+					},
+					{
+						Body:     "い",
+						ScreenXs: []int{0},
+					},
+					{
+						Body:     "b",
+						ScreenXs: []int{0},
+					},
+				},
+			},
+		} {
+			sc := &editor.Screen{
+				Width: c.givenWidth,
+			}
+			sc.Update_(c.givenBuffer)
+			if diff := cmp.Diff(c.wantRows, sc.Rows_); diff != "" {
+				t.Errorf("%s: %s", c.desc, diff)
+			}
+		}
+	})
+
 	t.Run("View()", func(t *testing.T) {
 		for _, c := range []struct {
 			desc         string
