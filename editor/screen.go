@@ -34,40 +34,50 @@ func (r *ScreenRow) UpdateXs() {
 }
 
 func (s *Screen) Update(buffer []string) {
-	var rs []*ScreenRow
+	var (
+		rows     []*ScreenRow
+		screenXs []int
+	)
 	for _, row := range buffer {
-		w := 0
-		bi := 0
+		rr := []rune(row)
+		rr = append(rr, ' ') // Add a space expressing end of the row
 		l := 0
-		var xs []int
-		for i, c := range row {
-			xs = append(xs, w)
-			l++
-			bw := w
-			if c <= unicode.MaxASCII {
-				w++
-			} else {
-				w += 2
-			}
-			if w > s.Width {
-				rs = append(rs, &ScreenRow{
-					Body:     row[bi:i],
-					ScreenXs: append([]int(nil), xs[:len(xs)-1]...),
-					Len:      l - 1,
-				})
-				bi = i
-				l = 1
-				w = w - bw
-				xs = []int{0}
+		w := 0
+		var nw int
+		if rr[0] <= unicode.MaxASCII {
+			nw = 1
+		} else {
+			nw = 2
+		}
+		for i := 0; i < len(rr); i++ {
+			screenXs = append(screenXs, w)
+			w = nw
+			if i < len(rr)-1 {
+				if rr[i+1] <= unicode.MaxASCII {
+					nw = w + 1
+				} else {
+					nw = w + 2
+				}
+				if nw > s.Width {
+					rows = append(rows, &ScreenRow{
+						Len:      len(rr[l : i+1]),
+						Body:     string(rr[l : i+1]),
+						ScreenXs: screenXs,
+					})
+					l = i + 1
+					nw = nw - w
+					w = 0
+					screenXs = nil
+				}
 			}
 		}
-		rs = append(rs, &ScreenRow{
-			Body:     row[bi:],
-			ScreenXs: append([]int(nil), xs...),
-			Len:      l,
+		rows = append(rows, &ScreenRow{
+			Len:      len(rr[l:]),
+			Body:     string(rr[l:]),
+			ScreenXs: screenXs,
 		})
 	}
-	s.Rows = rs
+	s.Rows = rows
 }
 
 func (s *Screen) Scroll(diff int) {
