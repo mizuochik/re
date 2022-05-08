@@ -22,10 +22,13 @@ type Editor struct {
 	Rows            int
 	Buffer          []string
 	Vscroll         int
+	Screen          *Screen
 }
 
 func New() *Editor {
-	return &Editor{}
+	return &Editor{
+		Screen: &Screen{},
+	}
 }
 
 func (e *Editor) SetRawMode() error {
@@ -54,49 +57,18 @@ func (e *Editor) ClearScreen() {
 }
 
 func (e *Editor) RefreshCursor() {
-	minCy := 0
-	maxCy := len(e.Buffer)
-	if e.Cy < minCy {
-		e.Cy = minCy
-	}
-	if e.Cy > maxCy {
-		e.Cy = maxCy
-	}
-	minCx := 0
-	maxCx := 0
-	if e.Cy < len(e.Buffer) {
-		maxCx = len(e.Buffer[e.Cy])
-	}
-	if e.Cx < minCx {
-		e.Cx = minCx
-	}
-	if e.Cx > maxCx {
-		e.Cx = maxCx
-	}
-	for e.Cy < e.Vscroll || e.Cy >= e.Vscroll+e.Rows {
-		if e.Cy < e.Vscroll {
-			e.Scroll(-e.Rows / 4)
-		}
-		if e.Cy >= e.Vscroll+e.Rows {
-			e.Scroll(e.Rows / 4)
-		}
-	}
-	fmt.Printf("\x1b[%d;%dH", e.Cy-e.Vscroll+2, e.Cx+1) // for status bar
+	x, y := e.Screen.CursorPosition()
+	fmt.Printf("\x1b[%d;%dH", y+2, x+1) // for status bar
 }
 
 func (e *Editor) MoveCursorRelative(x, y int) {
-	e.Cx += x
-	e.Cy += y
+	e.Screen.MoveCursorHorizontally(x)
+	e.Screen.MoveCursorVertically(y)
 	e.RefreshCursor()
 }
 
 func (e *Editor) MoveCursorAbsolute(x, y int) {
-	if x >= 0 {
-		e.Cx = x
-	}
-	if y >= 0 {
-		e.Cy = y
-	}
+	// TBD
 	e.RefreshCursor()
 }
 
@@ -121,10 +93,11 @@ func (e *Editor) RefreshScreen() error {
 		return err
 	}
 	e.DrawStatusBar()
+	rows := e.Screen.View()
 	for i := 0; i < e.Rows; i++ {
 		fmt.Print("\x1b[2K")
-		if i+e.Vscroll < len(e.Buffer) {
-			fmt.Print(e.Buffer[i+e.Vscroll])
+		if i < len(rows) {
+			fmt.Print(rows[i].Body)
 		} else {
 			fmt.Print("~")
 		}
@@ -163,6 +136,8 @@ outer:
 		buf = append(buf, string(line))
 	}
 	e.Buffer = buf
+	e.UpdateWindowSize()
+	e.Screen.Update(buf)
 	return nil
 }
 
@@ -309,6 +284,8 @@ func (e *Editor) UpdateWindowSize() error {
 	}
 	e.Cols = int(w.Col)
 	e.Rows = int(w.Row) - 1 // for status bar
+	e.Screen.Width = int(w.Col)
+	e.Screen.Height = int(w.Row) - 1 // for status bar
 	return nil
 }
 

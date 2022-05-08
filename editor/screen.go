@@ -130,7 +130,7 @@ func (s *Screen) MoveCursorVertically(diff int) {
 	if diff > 0 {
 		rest := len(s.Rows) - s.Cy - 1
 		if diff < rest {
-			s.Cy -= diff
+			s.Cy += diff
 		} else {
 			s.Cy = len(s.Rows) - 1
 		}
