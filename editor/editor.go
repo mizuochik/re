@@ -63,7 +63,7 @@ func (e *Editor) RefreshCursor() {
 
 func (e *Editor) MoveCursorRelative(x, y int) {
 	e.Screen.MoveCursorHorizontally(x)
-	// e.Screen.MoveCursorVertically(y)
+	e.Screen.MoveCursorVertically(y)
 	e.RefreshCursor()
 }
 
