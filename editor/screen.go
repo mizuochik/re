@@ -35,14 +35,14 @@ func (r *ScreenRow) UpdateXs() {
 
 func (s *Screen) Update(buffer []string) {
 	var (
-		rows     []*ScreenRow
-		screenXs []int
+		rows []*ScreenRow
 	)
 	for _, row := range buffer {
 		rr := []rune(row)
 		rr = append(rr, ' ') // Add a space expressing end of the row
 		l := 0
 		w := 0
+		var screenXs []int
 		var nw int
 		if rr[0] <= unicode.MaxASCII {
 			nw = 1
